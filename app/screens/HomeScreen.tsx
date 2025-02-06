@@ -55,7 +55,9 @@ const HomeScreen = () => {
         placeholder="Search for news"
         value={query}
         onChangeText={setQuery}
+        onSubmitEditing={searchNews}
       />
+
       <TouchableOpacity style={styles.button} onPress={searchNews}>
         <Text style={styles.buttonText}>Search</Text>
       </TouchableOpacity>
