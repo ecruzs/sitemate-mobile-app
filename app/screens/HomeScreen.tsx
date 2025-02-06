@@ -39,6 +39,8 @@ const HomeScreen = () => {
       }
       setArticles(news);
       await storeSearchHistory(query);
+      const updatedHistory = await loadSearchHistory();
+      setSearchHistory(updatedHistory);
     } catch (err) {
       if (err instanceof Error) {
         if (err.message === 'Network Error') {
