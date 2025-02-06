@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, Button, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { fetchNews } from '../../services/newsApi';
+import { storeSearchHistory, loadSearchHistory } from '../../services/searchHistory';
 import ArticleCard from '../components/ArticleCard';
 
 const HomeScreen = () => {
@@ -8,6 +9,15 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(false);
   const [articles, setArticles] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  
+  useEffect(() => {
+    const fetchHistory = async () => {
+      const history = await loadSearchHistory();
+      setSearchHistory(history);
+    };
+    fetchHistory();
+  }, []);
 
   const searchNews = async () => {
     setLoading(true);
@@ -15,14 +25,18 @@ const HomeScreen = () => {
     try {
       const news = await fetchNews(query);
       setArticles(news);
+      
+      // Save search to history
+      await storeSearchHistory(query);
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
+
+    return (
     <View style={styles.container}>
       <Text style={styles.title}>Sitemate News App</Text>
       <TextInput
@@ -34,8 +48,18 @@ const HomeScreen = () => {
       <Button title="Search" onPress={searchNews} />
 
       {loading && <ActivityIndicator size="large" color="#0000ff" />}
-
       {error && <Text style={styles.error}>{error}</Text>}
+
+      <Text style={styles.subtitle}>Recent Searches</Text>
+      <FlatList
+        data={searchHistory}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => setQuery(item)}>
+            <Text style={styles.historyItem}>{item}</Text>
+          </TouchableOpacity>
+        )}
+      />
 
       <FlatList
         data={articles}
@@ -70,20 +94,16 @@ const styles = StyleSheet.create({
     color: 'red',
     marginVertical: 10,
   },
-  article: {
-    marginBottom: 15,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-  },
-  articleTitle: {
+  subtitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginVertical: 10,
   },
-  articleDescription: {
-    fontSize: 14,
-    color: '#555',
+  historyItem: {
+    fontSize: 16,
+    color: '#007BFF',
+    marginVertical: 5,
+    textDecorationLine: 'underline',
   },
 });
 
