@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { fetchNews } from '../../services/newsApi';
 import { storeSearchHistory, loadSearchHistory } from '../../services/searchHistory';
 import ArticleCard from '../components/ArticleCard';
@@ -21,12 +21,20 @@ const HomeScreen = () => {
   }, []);
 
   const searchNews = async () => {
+    if (query.trim() === '') {
+      setError('Please enter a search term.');
+      setArticles([]);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
       const news = await fetchNews(query);
       if (news.length === 0) {
-        throw new Error('No articles found.');
+        setArticles([]);
+        setError(null);
+        return;
       }
       setArticles(news);
       await storeSearchHistory(query);
@@ -64,7 +72,6 @@ const HomeScreen = () => {
 
       {loading && <ActivityIndicator size="large" color="#0000ff" />}
       {error && <ErrorMessage message={error} />}
-
 
       <Text style={styles.subtitle}>Recent Searches</Text>
       <FlatList
@@ -134,7 +141,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-
 });
 
 export default HomeScreen;
