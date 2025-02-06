@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, FlatList, StyleSheet, ActivityIndicator,
 import { fetchNews } from '../../services/newsApi';
 import { storeSearchHistory, loadSearchHistory } from '../../services/searchHistory';
 import ArticleCard from '../components/ArticleCard';
+import ErrorMessage from '../components/ErrorMessage';
 
 const HomeScreen = () => {
   const [query, setQuery] = useState('');
@@ -10,7 +11,7 @@ const HomeScreen = () => {
   const [articles, setArticles] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
-  
+
   useEffect(() => {
     const fetchHistory = async () => {
       const history = await loadSearchHistory();
@@ -24,19 +25,25 @@ const HomeScreen = () => {
     setError(null);
     try {
       const news = await fetchNews(query);
+      if (news.length === 0) {
+        throw new Error('No articles found.');
+      }
       setArticles(news);
-      
-      // Save search to history
       await storeSearchHistory(query);
     } catch (err) {
-      setError('Something went wrong. Please try again.');
+      if (err.message === 'Network Error') {
+        setError('Network error. Please check your connection.');
+      } else if (err.message === 'No articles found.') {
+        setError('No articles found for this search term.');
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-
-    return (
+  return (
     <View style={styles.container}>
       <Text style={styles.title}>Sitemate News App</Text>
       <TextInput
@@ -48,7 +55,8 @@ const HomeScreen = () => {
       <Button title="Search" onPress={searchNews} />
 
       {loading && <ActivityIndicator size="large" color="#0000ff" />}
-      {error && <Text style={styles.error}>{error}</Text>}
+      {/* {error && <Text style={styles.error}>{error}</Text>} */}
+      {error && <ErrorMessage message={error} />}
 
       <Text style={styles.subtitle}>Recent Searches</Text>
       <FlatList
