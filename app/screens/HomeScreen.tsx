@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import { fetchNews } from '../services/newsApi';
+import { fetchNews } from '../../services/newsApi';
 
 const HomeScreen = () => {
   const [query, setQuery] = useState('');
