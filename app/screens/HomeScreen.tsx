@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { fetchNews } from '../../services/newsApi';
+import ArticleCard from '../components/ArticleCard';
 
 const HomeScreen = () => {
   const [query, setQuery] = useState('');
@@ -40,10 +41,7 @@ const HomeScreen = () => {
         data={articles}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-          <View style={styles.article}>
-            <Text style={styles.articleTitle}>{item.title}</Text>
-            <Text style={styles.articleDescription}>{item.description}</Text>
-          </View>
+          <ArticleCard title={item.title} description={item.description || 'No description available'} />
         )}
       />
     </View>
