@@ -31,12 +31,16 @@ const HomeScreen = () => {
       setArticles(news);
       await storeSearchHistory(query);
     } catch (err) {
-      if (err.message === 'Network Error') {
-        setError('Network error. Please check your connection.');
-      } else if (err.message === 'No articles found.') {
-        setError('No articles found for this search term.');
+      if (err instanceof Error) {
+        if (err.message === 'Network Error') {
+          setError('Network error. Please check your connection.');
+        } else if (err.message === 'No articles found.') {
+          setError('No articles found for this search term.');
+        } else {
+          setError('Something went wrong. Please try again.');
+        }
       } else {
-        setError('Something went wrong. Please try again.');
+        setError('Unexpected error occurred.');
       }
     } finally {
       setLoading(false);
@@ -52,11 +56,13 @@ const HomeScreen = () => {
         value={query}
         onChangeText={setQuery}
       />
-      <Button title="Search" onPress={searchNews} />
+      <TouchableOpacity style={styles.button} onPress={searchNews}>
+        <Text style={styles.buttonText}>Search</Text>
+      </TouchableOpacity>
 
       {loading && <ActivityIndicator size="large" color="#0000ff" />}
-      {/* {error && <Text style={styles.error}>{error}</Text>} */}
       {error && <ErrorMessage message={error} />}
+
 
       <Text style={styles.subtitle}>Recent Searches</Text>
       <FlatList
@@ -113,6 +119,20 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     textDecorationLine: 'underline',
   },
+  button: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
 });
 
 export default HomeScreen;
